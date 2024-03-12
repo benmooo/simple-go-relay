@@ -8,16 +8,24 @@ import (
 )
 
 func main() {
-	// Define the target URL
-	targetURL, err := url.Parse("http:://localhost:44391")
+	remote, err := url.Parse("http://127.0.0.1:3000")
 	if err != nil {
-		log.Fatal("Error parsing tart URL", err)
+		panic(err)
 	}
 
-	// Create a reverse proxy
-	reverseProxy := httputil.NewSingleHostReverseProxy(targetURL)
+	handler := func(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
+		return func(w http.ResponseWriter, r *http.Request) {
+			log.Println(r.URL)
+			r.Host = remote.Host
+			w.Header().Set("X-Ben", "Rad")
+			p.ServeHTTP(w, r)
+		}
+	}
 
-	// Start the proxy server listening on 0.0.0.0:3000
-	http.Handle("/", reverseProxy)
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	proxy := httputil.NewSingleHostReverseProxy(remote)
+	http.HandleFunc("/", handler(proxy))
+	err = http.ListenAndServe(":4000", nil)
+	if err != nil {
+		panic(err)
+	}
 }
