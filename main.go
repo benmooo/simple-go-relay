@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 
 	"github.com/joho/godotenv"
 )
@@ -26,6 +27,7 @@ func main() {
 		return func(w http.ResponseWriter, r *http.Request) {
 			log.Println(r.URL)
 			r.Host = remote.Host
+			r.Header.Set("Cookie", os.Getenv("COOKIE"))
 			p.ServeHTTP(w, r)
 		}
 	}
