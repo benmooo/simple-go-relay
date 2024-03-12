@@ -25,6 +25,16 @@ func main() {
 
 	handler := func(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Access-Control-Allow-Origin", "*")
+			w.Header().Add("Access-Control-Allow-Methods", "*")
+			w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+
+			if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusOK)
+				w.(http.Flusher).Flush()
+				return
+			}
+
 			log.Println(r.URL)
 			r.Host = remote.Host
 			r.Header.Set("Cookie", os.Getenv("COOKIE"))
