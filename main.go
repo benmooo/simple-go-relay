@@ -6,23 +6,21 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
 	// Load variables from .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 
 	relay0()
 }
 
 func relay0() {
 
-	remote, err := url.Parse("http://localhost:44391")
+	remote, err := url.Parse("https://dd.kq39.cn")
 	// remote, err := url.Parse("http://localhost:45395")
 	if err != nil {
 		panic(err)
@@ -30,21 +28,26 @@ func relay0() {
 
 	handler := func(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Access-Control-Allow-Origin", "*")
-			w.Header().Add("Access-Control-Allow-Methods", "*")
-			// allow all headers
-			w.Header().Add("Access-Control-Allow-Headers", "*")
-			w.Header().Add("Access-Control-Allow-Credentials", "true")
-
+			// print the request
 			if r.Method == "OPTIONS" {
+				w.Header().Set("Access-Control-Allow-Origin", "*")
+				w.Header().Set("Access-Control-Allow-Methods", "*")
+				w.Header().Set("Access-Control-Allow-Headers", "*")
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
 				w.WriteHeader(http.StatusOK)
-				w.(http.Flusher).Flush()
 				return
 			}
+			// if r.Method == "POST"  we need to set the content-type header
+			if r.Method == "POST" {
+				w.Header().Set("Content-Type", "application/json")
+			}
+			w.Header().Set("Access-Control-Allow-Methods", "*")
+			w.Header().Set("Access-Control-Allow-Headers", "*")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-			log.Println(r.URL)
+			// w.Header().Set("Access-Control-Allow-Origin", "*")
+			log.Println(w)
 			r.Host = remote.Host
-			r.Header.Set("Cookie", os.Getenv("COOKIE0"))
 			p.ServeHTTP(w, r)
 		}
 	}
@@ -63,8 +66,8 @@ func relay1() {
 
 	handler := func(p *httputil.ReverseProxy) func(http.ResponseWriter, *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Access-Control-Allow-Origin", "*")
-			w.Header().Add("Access-Control-Allow-Methods", "*")
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "*")
 			w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
 			if r.Method == "OPTIONS" {
